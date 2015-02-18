@@ -35,14 +35,6 @@ Registering brainstem is hard due to the lack of sharp edges, compared to Cerebr
 
 Allen Reference Atlas does not have enough details in brainstem.
 
-
-
-\begin{figure}
-\vspace{2.5cm}
-\caption{}
-\end{figure}
-
-
 \section{Related Work}
 
 \begin{description}
@@ -65,7 +57,7 @@ textons
 
 \end{description}
 
-\section{Represent Texture using Histograms of Gabor Textons}
+\section{Representing Texture using Histograms of Gabor Textons}
 
 Represent texture at each pixel using Gabor filters.
 
@@ -76,17 +68,46 @@ Over-segment into superpixels.
 Describe texture using histogram of textons
 
 
-\section{Detect Significant Region Using Center-Surround Contrast}
+\section{Detecting Significant Region Using Center-Surround Contrast}
 
-Region Growing
+Grow each superpixel into a region.
+
+Score is computed as the center-surround contrast of the texton histograms.
 
 
-\section{Robust Boundary Detection by Region Concensus}
+\section{Detecting Boundaries by Region Concensus}
 
+Instead of voting for each superpixels as boundary separately, vote for them as a set.
+
+Each growed region vote according to their saliency scores.
+
+Each boundary is described by a tuple that consists of four elements:
+
+1. x-y positions of every superpixel on the boundary
+
+2. centroid of the expansion cluster inside the boundary
+
+3. the average texton distribution of interior superpixels
+
+4. a list of texton distributions of exterior superpixels (more precisely, the closest layer of superpixels on the outside of the boundary).
 
 \section{Matching Boundaries from Different Sections}
 
+distance = interior + exterior + shape + location 
+\\
 
+Distance between boundaries are defined as a weighted combination of:
+
+1. Jenson-Shannon divergence between interior distributions
+
+2. symmetric Hausdorff distances between the two sets of exterior distributions. That is, the maximum among the distances between each distribution and its closest distribution from the other set. Here the distance is the Jenson-Shannon divergence.
+
+3. shape dissimilarity: total chi2-distances of shape context descriptors after correspondences are identified for superpixels on two boundaries using dynamic programming. (This is essentially the Shape Distance in Section 5.1 of Belongie's paper)
+
+4. spatial distance: Euclidean distance between cluster centroids
+\\
+
+Boundaries are detected from two sections and their pairwise distances are computed. A pair of boundaries are matched if they are the closest boundary of each other.
 
 \section{Experiments}
 
@@ -94,17 +115,18 @@ Region Growing
 
 Shows the results of our algorithm is comparable to human labeling.
 
-\begin{figure}
-\vspace{2.5cm}
-\caption{}
-\end{figure}
-
+show results for RS141. (Do we need to do more than one stacks here? I think one stack already shows enough variations. A coronal stack would be good, but we don't have any now).
 
 \subsection{robustness of matching}
 
 Shows that matchings are robust to distortion and shape change.
 Also shows that our distance measure is a sensible one: each of the four terms is important. We show this by changing the term weightings, and then compare matching results.
 
+\section{Future Work}
+
+use detected landmarks for registration
+
+learn visual words using deep neural networks
 
 
 %
