@@ -2,11 +2,18 @@
 
 \usepackage{makeidx}  % allows for indexgeneration
 
+\usepackage{graphics, graphicx, xcolor}
+
+
+\newcommand{\authcmt}[2]{\textcolor{#1}{#2}}
+\newcommand{\yuncong}[1]{\authcmt{red}{[YC: #1]}}
+\newcommand{\yoav}[1]{\authcmt{blue}{[YF: #1]}}
+
 \begin{document}
 %
 %\mainmatter              % start of the contributions
 %
-\title{Robust Region Landmark Detection for Mouse Brainstem Section Images}
+\title{Robust Landmark Detection for Mouse Brain Section Images}
 %
 \titlerunning{Robust Region Landmark Detection}  % abbreviated title (for running head)
 %                                     also used for the TOC unless
@@ -21,17 +28,36 @@
 %
 \institute{Department of Computer Science and Engineering, \\University of California, San Diego, La Jolla, CA 92122, USA}
 
+
+
+
 \maketitle              % typeset the title of the contribution
 
 \begin{abstract}
 
+\yoav{Abstract is high priority because deadline is soon}
+
 \keywords{landmark detection, atlas generation, mouse brain, gabor filter}
 \end{abstract}
 %
+
+\yoav{Overall, good outline. Next steps are to write an abstract and
+  to generate good figures. I would write the text after having the
+  figures.}
+
 \section{Introduction}
 %
 
-Registering brainstem is hard due to the lack of sharp edges, compared to Cerebral Cortex and Cerebellum.
+Registering brainstem is hard due to the lack of high contrast edges,
+compared to Cerebral Cortex and Cerebellum. One has to rely on
+differences in texture.
+
+\yoav{The Allen Reference Atlas is only useful to humans, it is not a
+  system that can take a stack and align it to a standard. In
+  addition, it has limited details in the brain stem. Partha Mitra
+  actually had an interesting suggestion, which is that we get the
+  atlas images and annotation and use them to train texture
+  detectors.}
 
 Allen Reference Atlas does not have enough details in brainstem.
 
@@ -48,6 +74,9 @@ SIFT
 global rarity scheme
 
 center-surround scheme
+
+\yoav{Is there work that uses notion of statistical significance in
+  this context?}
 
 \item{Texture Representation}
 
@@ -67,19 +96,24 @@ Over-segment into superpixels.
 
 Describe texture using histogram of textons
 
-
 \section{Detecting Significant Region Using Center-Surround Contrast}
+
+\yoav{Define the problem of finding regions+textures of high
+  statistical significance.}
 
 Grow each superpixel into a region.
 
 Score is computed as the center-surround contrast of the texton histograms.
 
+\section{Human Supervision}
+
+\yoav{Describe how salient region detection improves efficiency of human labeling.}
 
 \section{Detecting Boundaries by Region Concensus}
 
-Instead of voting for each superpixels as boundary separately, vote for them as a set.
+Instead of voting for each superpixel as boundary separately, vote for them as a set.
 
-Each growed region vote according to their saliency scores.
+Each region votes according to their saliency scores.
 
 Each boundary is described by a tuple that consists of four elements:
 
@@ -126,7 +160,8 @@ Also shows that our distance measure is a sensible one: each of the four terms i
 
 use detected landmarks for registration
 
-learn visual words using deep neural networks
+Learn dictionary using deep neural networks, ICA, ...
+
 
 
 %
