@@ -1,0 +1,124 @@
+\documentclass{llncs}
+
+\usepackage{makeidx}  % allows for indexgeneration
+
+\begin{document}
+%
+%\mainmatter              % start of the contributions
+%
+\title{Robust Region Landmark Detection for Mouse Brainstem Section Images}
+%
+\titlerunning{Robust Region Landmark Detection}  % abbreviated title (for running head)
+%                                     also used for the TOC unless
+%                                     \toctitle is used
+%
+\author{Yuncong Chen \and Yoav Freund}
+%
+\authorrunning{Yuncong Chen et al.} % abbreviated author list (for running head)
+%
+%%%% list of authors for the TOC (use if author list has to be modified)
+\tocauthor{Yuncong Chen, Yoav Freund}
+%
+\institute{Department of Computer Science and Engineering, \\University of California, San Diego, La Jolla, CA 92122, USA}
+
+\maketitle              % typeset the title of the contribution
+
+\begin{abstract}
+
+\keywords{landmark detection, atlas generation, mouse brain, gabor filter}
+\end{abstract}
+%
+\section{Introduction}
+%
+
+Registering brainstem is hard due to the lack of sharp edges, compared to Cerebral Cortex and Cerebellum.
+
+Allen Reference Atlas does not have enough details in brainstem.
+
+
+
+\begin{figure}
+\vspace{2.5cm}
+\caption{}
+\end{figure}
+
+
+\section{Related Work}
+
+\begin{description}
+
+\item{Point Landmark Detection}
+
+SIFT
+
+\item{Saliency and Objectness Detection}
+
+global rarity scheme
+
+center-surround scheme
+
+\item{Texture Representation}
+
+gabor filter
+
+textons
+
+\end{description}
+
+\section{Represent Texture using Histograms of Gabor Textons}
+
+Represent texture at each pixel using Gabor filters.
+
+rotation-invariant k-means clustering to form textons.
+
+Over-segment into superpixels.
+
+Describe texture using histogram of textons
+
+
+\section{Detect Significant Region Using Center-Surround Contrast}
+
+Region Growing
+
+
+\section{Robust Boundary Detection by Region Concensus}
+
+
+\section{Matching Boundaries from Different Sections}
+
+
+
+\section{Experiments}
+
+\subsection{comparison with human labelings}
+
+Shows the results of our algorithm is comparable to human labeling.
+
+\begin{figure}
+\vspace{2.5cm}
+\caption{}
+\end{figure}
+
+
+\subsection{robustness of matching}
+
+Shows that matchings are robust to distortion and shape change.
+Also shows that our distance measure is a sensible one: each of the four terms is important. We show this by changing the term weightings, and then compare matching results.
+
+
+
+%
+% ---- Bibliography ----
+%
+\begin{thebibliography}{5}
+%
+\bibitem {clar:eke}
+Clarke, F., Ekeland, I.:
+Nonlinear oscillations and
+boundary-value problems for Hamiltonian systems.
+Arch. Rat. Mech. Anal. 78, 315--333 (1982)
+
+\end{thebibliography}
+
+
+\end{document}
