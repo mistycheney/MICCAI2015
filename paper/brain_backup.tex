@@ -14,7 +14,7 @@
 %
 %\mainmatter              % start of the contributions
 %
-\title{Automatic Region Landmark Detection for Active Atlas}
+\title{Robust Landmark Detection for Mouse Brain Section Images}
 %
 \titlerunning{Robust Region Landmark Detection}  % abbreviated title (for running head)
 %                                     also used for the TOC unless
@@ -36,73 +36,102 @@
 
 \begin{abstract}
 
-Brightfield and fluorescent imaging is of central importance in mouse brain
-studies. Current technology allows a whole brain to be scanned in a matter of hours. At the same time, there is an increasing number of fluorescent markers that can be used to label neurons with specific
-phenotypes. As the number of available images mounts, the manual work
-required to analyze these images becomes a major bottleneck and automated tools that aggregate information in the images become necessary.
 
-In this work we describe the first steps in a project whose goal is to build an ``active" atlas, which combines annotation, registration and atlas building in a semi-automated iterative framework. This atlas explicitly models region landmarks, uses these models to detect landmarks from new images for registration; meanwhile, the models are updated based on newly registered images. 
+Brain atlas is important 
 
-The part of the project described here is a semi-supervised learning
-system for identifying region landmarks. It detects and models regions that have distinct texture and are consistent across sections. It also models stable boundary segments. Experiments show that the detected landmarks correspond well with labellings by experienced anatomists. The results serve as a promising basis for the next stage of registration and atlas building.
+atlas quantify the variation
 
-
-\iffalse
-Brightfield and flurescent imaging is of central importance in mouse brain
-studies. As automation is improving, a whole brain can be imaged in 
-one hour. At the same time, there is an increasing number of
-fluorescent markers that can be used to identify neurons with specific
-phenotypes. As the number of available images mounts, the manual work
-required to analyze these images becomes a major bottleneck and 
-automated tools for processing those images become necessary.
-
-In this work we describe the first steps in a project whose goal is to
-create a ``digital atlas'' of the brain. A digital atlas in this
-context is computer software (and data) that takes as input a stack of
-section images and maps those images onto a standarized coordinate
-system for the mouse brain. Such mapping is a prerquisite for
-automatic quantitative analysis of phenotypical variation. Currently
-such mapping is done manually.
-
-The part of the project described here is a semi-supervised learning
-system for identifying landmarks in brain slice images. The
-identification of such landmarks is based on identifying regions with
-distinct texture and the boundaries between these landmarks. Thew
-digital atlas will be compiled by comparing different brains and
-identifying the consistent landmarks.
-\fi
-
-\keywords{landmark detection, atlas building, mouse brain, gabor filter}
-
-\end{abstract}
-%
-
-\section{Introduction}
 
 Brightfield and fluorescent imaging is of central importance in mouse brain
 studies. As automation is improving, a whole brain can be imaged in a matter of hours	. At the same time, there is an increasing number of
 fluorescent markers that can be used to label neurons with specific
 phenotypes. As the number of available images mounts, the manual work
-required to analyze these images becomes a major bottleneck and tools that aggregates information in the images such as standardized atlases become necessary. A standardized atlas maps image series of different specimens onto a common 3D coordinate system. On the one hand, this allows the new specimen to be compared with annotations and cell type maps collected from previous specimens; on the other hand, new specimens augment the atlas by introducing annotations for new structures or by providing additional cell type data demonstrated by new markers.
+required to analyze these images becomes a major bottleneck and 
+automated tools become necessary.
 
-Much effort has been made to construct digital atlases for a variety of species. A popular atlas for mice is the Allen Reference Atlas. It consists of section images of a single brain, with major anatomical structures annotated and localized in the 3D reference space. While this atlas is useful as a visual guide for annotating new images by hand, there is no easy solution for aligning new image series to the atlas. Software for registration usually requires heavy human intervention, such as picking the landmarks or adjusting parameters that lack intuitive meaning.
+In this work we describe the first steps in a project whose goal is to
+create a ``digital atlas'' of the mouse brainstem. 
 
-We propose building an ``active" atlas. In such an atlas, characteristics of annotated regions are modelled using machine learning. These models are then used to detect similar regions in new images. Detected regions serve as landmarks for both intra-specimen registration and specimen-atlas registration. Once the new images are aligned to the atlas, region models are updated based on characteristics of detected regions in the aligned new images. Essentially, the atlas ``actively" adapts to registered specimens, and ``actively" annotates new specimens for easier registration. In contrast to most existing work that either focuses on building an atlas by registering a single image series, or on aligning image series to an fixed atlas, the active atlas combines annotation, registration and atlas building into an iterative framework that is particularly suitable for processing a large number of specimens in an incremental fashion.
+Existing mouse brain atlases do not quantify the structural and phenotypical variation across different subjects.
 
-% and with as little human supervision as possible
+This atlas includes both automatically detected and human labelled landmarks. 
+It maps a stack of section images onto a standardized coordinate system.
 
-One crucial component in building an active atlas is identification of the landmarks. Until the region models are trained with sufficiently many examples, the system must obtain the annotation in other ways. Having human labellers do the annotation is time-consuming. In this paper, we propose an automatic approach.
+As more subjects are registered to the atlas, the atlas improves the quantification of variation.
 
-Our particular study focuses on the brainstem. Unlike the cerebrum and the cerebellum, where neurons form high-contrast layered structures such as the cortex, the brainstem mostly contains nuclei, which are compact clusters of neurons. Neurons in each nucleus have similar size, shape and stain sensitivity, often also demonstrating uniform density and particular directionality. This gives each nuclei a distinctive texture, allowing them to be robustly identified when building the atlas. The fact that they are well localized also makes them perfect landmarks for registration. In addition to nuclei, fiber tracts are also recognizable structures in the brainstem. In particular, the directionality of a tract serves as an important feature of the landmark.
+The digital atlas will be compiled by comparing different brains and identifying the consistent landmarks.
 
-We therefore aim to model the landmarks based on texture. Section 3 describes how we represent textures using Gabor filters and superpixels. Section 4 explains how we identify potential landmark regions based on texture distinctiveness. Section 6 describes how we detect boundary segments based on regions in order to improve robustness. Section 7 describes how landmarks are matched between sections.
+Currently
+such mapping is done manually.
 
-%Allen Reference Atlas has limited details on the brainstem, which is also one of our motivations for building a new atlas.
+The part of the project described here is a semi-supervised learning
+system for identifying landmarks in brain slice images. The
+identification of such landmarks is based on identifying regions with
+distinct texture and the boundaries between these regions.
+
+\iffalse
+Neuronal circuits in the mouse brainstem controls important functions such as breathing and whisking. Studying these circuits has been a center-point of neuroscience, but the difficulties associated with identifying functional cell types and their spatial organization has been a major impediment to the advancement in these studies. We propose a system that automatically constructs atlases marked with important anatomical regions. By defining interesting regions as those with high statistical significance in its neighborhood, our algorithm identifies regions that are both distinct in texture and robust between different sections. Experiments show that the detected regions have high correspondences with labelings provided by experienced anatomists. The results serve as the cornerstone for 3D registration and 3D atlas building.
+\fi
+
+\keywords{landmark detection, atlas generation, mouse brain, gabor filter}
+\end{abstract}
 %
-%New landmarks that do not exist in previous specimens, 
-%
-%variation information used for identifying consistent landmarks
 
+\yoav{Overall, good outline. Next steps are to write an abstract and
+  to generate good figures. I would write the text after having the
+  figures.}
+
+\section{Introduction}
+
+
+Brightfield and fluorescent imaging is of central importance in mouse brain
+studies. As automation is improving, a whole brain can be imaged in a matter of hours	. At the same time, there is an increasing number of
+fluorescent markers that can be used to label neurons with specific
+phenotypes. As the number of available images mounts, the manual work
+required to analyze these images becomes a major bottleneck and 
+automated tools become necessary.
+
+Atlases are essential tools for brain studies. Much effort has been made to construct digital atlases for a variety of species. A popular digitized atlas for mice is the Allen Reference Atlas. It provides a standardized 3D brain volume compiled from histology images with major anatomical regions annotated. While this atlas is useful as a visual guide for manually annotating new specimens, it is not a solution to automatic large scale labelling. 
+
+At the center of this challenge is the task of mapping new image series to the atlas. In fact, once such mapping is completed, information can be transferred in both directions. On the one hand, new specimens enrich the atlas. For example, specimens that demonstrate new types of markers allow the atlas to have better characterization of the cell types. New nuclei that are discovered on the images may introduce new annotations to the atlas. New specimens also serve as additional data points for better modelling of the phenotypes of specific regions, as well as its variation within the same species. An atlas can incorporate variation information and present it in a quantitative way.  \footnote{Such information is unavailable in the Allen Reference Atlas as only one brain is used to construct the atlas.} On the other hand, the atlas transfers knowledge collected from a large number of prior brains to new specimens. In particular, annotations on the atlas can be mapped to the images, reducing tedious manual labelling. Variation information can be used, for example, to verify whether a gene expression pattern found in a particular specimen is common to the specie.
+
+Most existing work either focus on constructing the atlas by registering image series, or on aligning image series to an existing atlas. 
+
+The tight coupling between atlas building and image labelling motivates us to integrate the two problems: construct an atlas with additional information that facilitates alignment of new images to the atlas.
+
+
+Currently, such alignment is often done using software that requires heavy human intervention, such as picking the landmarks or adjusting parameters that lack intuitive meaning. As we intend to 
+
+The most critical component in an automated solution is identifying the landmarks.
+
+We argue that it is important for the atlas to explicitly model the annotated regions. These models can serve as landmarks, based on which new images can be registered to the atlas
+
+This allows training landmark-specific detectors that can be applied on new images to detect known regions. After , the atlas can be used as a map of landmarks, based on which new image series can be registered to the atlas.
+
+variation information used for identifying consistent landmarks
+
+
+
+
+This motivates us to develop a new kind of digital atlas for the mouse brainstem. This atlas not only characterizes anatomical regions in terms of texture with quantitative measures of the variation, but also provides a tool that aligns image series of new specimens to the atlas, thus allowing the transfer of information between the two sides with as little human supervision as possible. 
+
+Our particular study focuses on the brainstem. Unlike the cerebrum and the cerebellum, where neurons form high-contrast layered structures such as the cortex, the brainstem mostly contains nuclei, which are compact clusters of neurons. Neurons in each nucleus have similar size, shape and stain sensitivity, often also demonstrating uniform density and particular directionality. This gives each nuclei a distinctive texture, which not only allows them to be robustly identified when constructing the atlas, but also makes them perfect landmarks for registration.
+
+In addition to nuclei, fiber tracts are also recognizable structures in the brainstem. In particular, the directionality of a tract serves as an important feature of the landmark.
+
+ We therefore aim to model these textures
+
+this atlas does not have enough details in brainstem. 
+
+
+
+
+\yoav{The Allen Reference Atlas is only useful to humans, it is not a
+  system that can take a stack and align it to a standard. In
+  addition, it has limited details in the brain stem. Partha Mitra
+  actually had an interesting suggestion, which is that we get the
+  atlas images and annotation and use them to train texture
+  detectors.}
 
 \section{Related Work}
 
@@ -163,8 +192,7 @@ Describe texture using histogram of textons
   statistical significance.}
 
 
-Brain anatomists usually label section images in terms of nuclei, which are dense groups of gray matter with the same phenotype. For example, Figure 1 shows the facial motor nucleus.
-
+Brain anatomists usually label section images in terms of nuclei, which are dense groups of gray matter with the same phenotype. For example, Figure 1 shows the facial motor nucleus. Nuclei are typically well localized and are visually salient. In other words, they are constrained regions whose texture is stable within itself but distinct from its surrounds. These characteristics of nuclei allow them to be identified automatically when constructing the atlas, and also make them natural landmarks for registration. In addition to nuclei, fiber tracts are also easily recognizable structures. In particular, the orientation of a tract serves as an important feature of the landmark.
 
 Given the texture descriptors obtained from Gabor textons, we define the saliency of a region in terms of statistical significance computed for texton distributions, as we will elaborate below.
  
