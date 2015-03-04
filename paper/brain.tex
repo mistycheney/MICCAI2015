@@ -88,30 +88,43 @@ identifying the consistent landmarks.
 
 \section{Introduction}
 
-Brightfield and fluorescent imaging is of central importance in mouse brain
-studies. As automation is improving, a whole brain can be imaged in a matter of hours	. At the same time, there is an increasing number of
-fluorescent markers that can be used to label neurons with specific
-phenotypes. As the number of available images mounts, the manual work
-required to analyze these images becomes a major bottleneck and tools that aggregates information in the images such as standardized atlases become necessary. A standardized atlas maps image series of different specimens onto a common 3D coordinate system. On the one hand, this allows the new specimen to be compared with annotations and cell type maps collected from previous specimens; on the other hand, new specimens augment the atlas by introducing annotations for new structures or by providing additional cell type data demonstrated by new markers.
+Brightfield and fluorescent imaging is a fundamental tool in mouse brain studies. As sectioning and image acquisition becomes more efficient, there is an increasing need to automate the post-processing of sections for alignment and three dimensional visualization. There is also a need to facilitate the development of standardized atlases. A standardized atlas maps image series of different specimens to a common coordinate system, and shows a brain-wide map annotated with information such as cell type, tract tracing and physiological data. Such map serves as the underpinning of circuits analysis as well as quantitative analysis of phenotypical variation.
 
-Much effort has been made to construct digital atlases for a variety of species. A popular atlas for mice is the Allen Reference Atlas. It consists of section images of a single brain, with major anatomical structures annotated and localized in the 3D reference space. While this atlas is useful as a visual guide for annotating new images by hand, there is no easy solution for aligning new image series to the atlas. Software for registration usually requires heavy human intervention, such as picking the landmarks or adjusting parameters that lack intuitive meaning.
+%On the one hand, this allows the new specimen to be compared with annotations and cell type maps collected from previous specimens; on the other hand, new specimens augment the atlas by introducing annotations for new structures or by providing additional cell type data demonstrated by new markers.
+
+
+The Allen Mouse Brain Atlas is constructed by registering sections of a single brain.
+
+ While it is useful as a visual guide for annotating new images by hand, there is no easy solution for aligning new image series to the atlas. Software for registration usually requires heavy human intervention, such as picking the landmarks or adjusting parameters that lack intuitive meaning.
+
+
+Update itself. 
+
+
+A fixed atlas is not optimal, as new 
+
+building an atlas automatically 
+
+Several functions can be enabled by modeling the annotated regions. First, the regions can serve as landmarks in registration. Compared to point landmarks they can have more expressive features such as texture and shape. Second, the 
+
+
+In order to do this, we need to model the landmarks. 
 
 We propose building an ``active" atlas. In such an atlas, characteristics of annotated regions are modelled using machine learning. These models are then used to detect similar regions in new images. Detected regions serve as landmarks for both intra-specimen registration and specimen-atlas registration. Once the new images are aligned to the atlas, region models are updated based on characteristics of detected regions in the aligned new images. Essentially, the atlas ``actively" adapts to registered specimens, and ``actively" annotates new specimens for easier registration. In contrast to most existing work that either focuses on building an atlas by registering a single image series, or on aligning image series to an fixed atlas, the active atlas combines annotation, registration and atlas building into an iterative framework that is particularly suitable for processing a large number of specimens in an incremental fashion.
 
 % and with as little human supervision as possible
 
-One crucial component in building an active atlas is identification of the landmarks. Until the region models are trained with sufficiently many examples, the system must obtain the annotation in other ways. Having human labellers do the annotation is time-consuming. In this paper, we propose an automatic approach.
+One crucial component in building an active atlas is identifying the landmarks. Until the region models are trained with sufficiently many examples, the system must obtain the annotation in other ways. Having human labellers do the annotation is time-consuming. In this paper, we propose an automatic approach.
 
 Our particular study focuses on the brainstem. Unlike the cerebrum and the cerebellum, where neurons form high-contrast layered structures such as the cortex, the brainstem mostly contains nuclei, which are compact clusters of neurons. For example, Figure 1 shows the facial motor nucleus. Neurons in each nucleus have similar size, shape and stain sensitivity, often also demonstrating uniform density and particular directionality. This gives each nuclei a distinctive texture, allowing them to be robustly identified when building the atlas. The fact that they are well localized also makes them perfect landmarks for registration. In addition to nuclei, fiber tracts are also recognizable structures in the brainstem. In particular, the directionality of a tract serves as an important feature of the landmark.
 
-We therefore aim to model the landmarks based on texture. Section 3 describes how we represent textures using Gabor filters and superpixels. Section 4 explains how we identify potential landmark regions based on texture distinctiveness. Section 6 describes how we detect boundary segments based on regions in order to improve robustness. Section 7 describes how landmarks are matched between sections.
+We therefore aim to model the landmarks based on texture. Section 3 describes how we represent textures using Gabor filters and superpixels. Section 4 explains how we identify potential landmark regions based on texture distinctiveness. Section 6 describes how we detect stable boundary segments based on regions to improve robustness. Section 7 describes how landmarks are matched between sections.
 
 %Allen Reference Atlas has limited details on the brainstem, which is also one of our motivations for building a new atlas.
 %
 %New landmarks that do not exist in previous specimens, 
 %
 %variation information used for identifying consistent landmarks
-
 
 \section{Related Work}
 
@@ -158,6 +171,8 @@ Since different sections may be oriented at different angles, and in order for t
 
 \section{Evaluating Region Significance using Statistical Test}
 
+Now that textures are represented using histograms of Gabor textons, we need to find regions with distinct texture. In this section, we propose a score that measures the significance of a region. In the next section, we describe a method for finding potential regions as sets of connected superpixels. 
+
 There are three factors in determining the significance score of a region. The first factor is the distinctiveness of this region's texture, or in other words, how different its texture is from the surrounds. Since textures are represented as histograms, this problem naturally leads to a statistical test on whether the region's average texton histogram and those of its surrounds are sampled from the same distribution. In our experiment, the chi-squared test is used. The p-value of this test can be used as a quantitative measure of the distinctiveness. Since a region often has many neighbouring regions with different textures, the test is made between the region's histogram and that of every surrounding superpixel, and the largest p-value is used. 
 
 The second factor is the texture homogeneity within the region. This is defined in terms of the mean dissimilarity between all superpixels in the region and the region average.
@@ -167,8 +182,6 @@ The third factor stems from the fact that most nuclei have compact shapes. A com
 
 \section{Finding Significant Regions with Region Growing and Clustering}
 
-Now that textures are represented using histograms of Gabor textons, we need to find regions with distinct texture. In this section, we describe a method for finding potential regions as sets of connected superpixels. We also propose a score that measures the significance of a region.
- 
 Region growing is performed on every superpixel. Starting from a singleton containing the seed superpixel, the greedy procedure considers all neighbours of the current set, and iteratively adds the one whose texton histogram is closest to the current region histogram. The growing stops when the region reaches 10\% of the total area. Eventually, the region at the point when the significance score is the largest is returned. Figure x shows examples of this procedure.
 
 %The termination criteria is a threshold on the histogram dissimilarity between the newly added superpixel and the set average. Instead of using a pre-determined threshold, we over-grow the region until its size reaches 10\% of the total area, and record this dissimilarity at every iteration. The dissimilarity would be the largest when the growing incorporates a superpixel that is the most different in hindsight, and thus the region just before this point is returned as the result of growing. This maximum dissimilarity can be used as a measure for the contrast, since every added superpixel is lower than this value.
@@ -199,49 +212,38 @@ $$
 
 We also record the set of superpixels that vote for a segment, and call it the \textit{supporter set} of the segment.
 
-
 We discard boundary segments whose vote is lower than a threshold and model the remaining segments. Instead of modelling individual segments separately, we want to group segments that receive votes from the same group of expansion regions. Therefore we define the association between two boundary segments to be the Jaccard index of their supporter sets, and apply hierarchical clustering to obtain boundary segment groups. Each group represents a partial boundary. All partial boundaries are ranked according to the total vote of its segments.
 
-We model each partial boundary using three pieces of information: 
-\begin{itemize}
-first, the texture, set of exterior textures, and the midpoint set.
+\section{Matching Landmarks from Different Sections}
 
-\end{itemize}
+In order to use the detected regions and partial boundaries as landmarks for registration, correspondences must be made between them. In this section, we design a distance function for comparing two boundaries. For regions landmarks, it is straightforward to convert them to boundaries, and use the same function for comparison. This function is a weighted combination of the differences in four aspects.
 
+The first term is the difference of the interior textures. For regions, the interior texture is simply the average texton histogram. The interior texture of a boundary is the average texton histogram of the union of all segments' supporter sets. The difference is computed using the $\chi^2$ distance.
 
+The second term measures the similarity of boundary shapes. We reduce the boundary to a set of midpoints of the segments. The shape distance between two point sets can be computed using shape context descriptors. The shape context descriptors characterize the organization of other points around each point using a histogram. Two sets of points are matched by finding the minimum bipartite matching, where the edge weights are the chi-square distances between shape context descriptors. The Hungarian algorithm is used to find the matching. The total cost of this matching is used as the second term.
 
-\section{Matching Boundaries from Different Sections}
+After the matching between boundary segment is made, we compute the third term, defined as the total distance between exterior textures of all matched segments. The exterior texture of a boundary segment is the texton histogram of the superpixels at the exterior side of the segment.
 
-In this section, we design a distance function for comparing two partial boundaries. This function is a weighted combination of the differences in four aspects.
-
-The first term is the difference of the interior textures. This is simply the $\chi^2$ distance between the texton histograms.
-
-The minimum bipartite matching for the two sets of boundary segments is computed using the Hungarian algorithm.
-
-The shape context descriptors characterize the local shape around each of a set of sample points using a histogram.
-
-
-The distance between two segments depends both on the similarity of the shape context descriptors and on the similarity of the texture at the exterior of the boundary segment.
-
-For each boundary, the shape context descriptors are computed for the point set consisting of the midpoint of every boundary segment.
-
-
-the exterior of the boundary segment
-
-The fourth term is the spatial distance between the boundaries. This is the Euclidean distance between the center of mass of the boundaries' midpoint sets.
+The fourth term measures the spatial distance between the boundaries. This is the Euclidean distance between the center of mass of the boundaries' midpoint sets.
 
 %exterior textures: the symmetric Hausdorff distances between the two sets of exterior distributions. That is, the maximum among the $\chi^2$ distances between each distribution and its closest distribution from the other set.
 
 %shape: the total $\chi^2$ distances of shape context descriptors after the superpixels on two boundaries using dynamic programming. (This is essentially the Shape Distance in Section 5.1 of Belongie's paper)
-
-%location: the Euclidean distance between cluster centroids.
 
 $$D(c_1, c_2) = w_{int} \cdot \chi^2(\bar{h}_1, \bar{h}_2) + 
 w_{ext} \cdot \max_{i \in \delta c_1, j\in \delta c_2}(h_i, h_j) +
 w_{sha} \cdot \sum_{i \in \delta c_1, j \in \delta c_2, i, j \mathtt{matches}} \chi^2(s_i, s_j)
 $$
 
-Boundaries are detected from two sections and their pairwise distances are computed. A pair of boundaries are matched if they are both the closest boundary of one another.
+Landmarks are detected from two sections and their pairwise distances are computed. A pair of landmarks are matched if they are both the closest landmark of one another.
+
+\section{Human Supervision}
+
+This system reduces human supervision in annotating brain images. Without any prior annotation, the region landmarks detected by the system can serve as suggestions for significant regions that require annotation. A human labeller then inspects the suggested landmarks. If a landmark is judged to correspond to a real anatomical structure, the human labeller gives it a name and the model of this landmark is stored in the atlas. The human labeler can also manually correct landmarks that are misplaced or create new annotations.
+The stored models are compared to the landmarks detected on a new image. If some detected landmarks match the models in the atlas, annotation of these landmarks can be transferred to the new image automatically.
+
+In addition, both the region and boundary landmarks serve as basis for registration, which is part of our plan for future work.
+
 
 \section{Experiments}
 
