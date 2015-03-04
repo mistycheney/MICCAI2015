@@ -14,13 +14,13 @@
 %
 %\mainmatter              % start of the contributions
 %
-\title{Automatic Region Landmark Detection for Active Atlas}
+\title{Robust Landmark Detection for Alignment of Mouse Brain Section Images}
 %
-\titlerunning{Robust Region Landmark Detection}  % abbreviated title (for running head)
+\titlerunning{Robust Landmark Detection for Mouse Brain Images}  % abbreviated title (for running head)
 %                                     also used for the TOC unless
 %                                     \toctitle is used
 %
-\author{Yuncong Chen, David Kleinfeld \and Yoav Freund}
+\author{Yuncong Chen, David Kleinfeld, Martyn Goulding \and Yoav Freund}
 %
 \authorrunning{Yuncong Chen et al.} % abbreviated author list (for running head)
 %
@@ -36,8 +36,17 @@
 
 \begin{abstract}
 
-Brightfield and fluorescent imaging is of central importance in mouse brain
-studies. Current technology allows a whole brain to be scanned in a matter of hours. At the same time, there is an increasing number of fluorescent markers that can be used to label neurons with specific
+Brightfield and fluorescent imaging of whole brain sections is a fundamental tool in anatomical studies on brain functions. As automation of the sectioning and image acquisition processes become more efficient, there is an increasing need to automate the post-processing of sections for alignment and three dimensional visualization. There is a further need to facilitate the development of a ``digital atlas", i.e. a brain-wide map annotated with cell type, tract tracing and physiological data, which serves as the underpinning of circuits analysis as well as for quantitative analysis of phenotypical variation. Currently, such maps are created by hand.
+
+In this work we describe the first steps in developing a semi-automated system to construct a mouse brain atlas that combines annotation, registration and atlas building in an iterative framework. This atlas stores landmark models, uses them to detect landmarks from new images and maps the images onto the atlas's standardized coordinate system; meanwhile, the models in the atlas are updated based on newly registered images.
+
+The aspect of the project described here is a semi-supervised learning
+system for identifying landmarks. It detects and models regions with distinct texture that are consistent across sections. It also identifies boundary segments for regions that are not compact. Experiments show that the detected landmarks correspond well with labellings by experienced anatomists. The results serve as a promising basis for the next stage of registration and atlas building.
+
+
+\iffalse
+Brightfield and fluorescent imaging of whole brain sections is a fundamental tool in anatomical studies on brain functions. 
+Current technology allows a whole brain to be scanned in a matter of hours. At the same time, there is an increasing number of fluorescent markers that can be used to label neurons with specific
 phenotypes. As the number of available images mounts, the manual work
 required to analyze these images becomes a major bottleneck and automated tools that aggregate information in the images become necessary.
 
@@ -45,7 +54,7 @@ In this work we describe the first steps in a project whose goal is to build an 
 
 The part of the project described here is a semi-supervised learning
 system for identifying region landmarks. It detects and models regions that have distinct texture and are consistent across sections. It also models stable boundary segments. Experiments show that the detected landmarks correspond well with labellings by experienced anatomists. The results serve as a promising basis for the next stage of registration and atlas building.
-
+\fi
 
 \iffalse
 Brightfield and flurescent imaging is of central importance in mouse brain
@@ -72,7 +81,7 @@ digital atlas will be compiled by comparing different brains and
 identifying the consistent landmarks.
 \fi
 
-\keywords{landmark detection, atlas building, mouse brain, gabor filter}
+\keywords{landmark detection, atlas building, mouse brain, registration, automated annotation}
 
 \end{abstract}
 %
@@ -93,7 +102,7 @@ We propose building an ``active" atlas. In such an atlas, characteristics of ann
 
 One crucial component in building an active atlas is identification of the landmarks. Until the region models are trained with sufficiently many examples, the system must obtain the annotation in other ways. Having human labellers do the annotation is time-consuming. In this paper, we propose an automatic approach.
 
-Our particular study focuses on the brainstem. Unlike the cerebrum and the cerebellum, where neurons form high-contrast layered structures such as the cortex, the brainstem mostly contains nuclei, which are compact clusters of neurons. Neurons in each nucleus have similar size, shape and stain sensitivity, often also demonstrating uniform density and particular directionality. This gives each nuclei a distinctive texture, allowing them to be robustly identified when building the atlas. The fact that they are well localized also makes them perfect landmarks for registration. In addition to nuclei, fiber tracts are also recognizable structures in the brainstem. In particular, the directionality of a tract serves as an important feature of the landmark.
+Our particular study focuses on the brainstem. Unlike the cerebrum and the cerebellum, where neurons form high-contrast layered structures such as the cortex, the brainstem mostly contains nuclei, which are compact clusters of neurons. For example, Figure 1 shows the facial motor nucleus. Neurons in each nucleus have similar size, shape and stain sensitivity, often also demonstrating uniform density and particular directionality. This gives each nuclei a distinctive texture, allowing them to be robustly identified when building the atlas. The fact that they are well localized also makes them perfect landmarks for registration. In addition to nuclei, fiber tracts are also recognizable structures in the brainstem. In particular, the directionality of a tract serves as an important feature of the landmark.
 
 We therefore aim to model the landmarks based on texture. Section 3 describes how we represent textures using Gabor filters and superpixels. Section 4 explains how we identify potential landmark regions based on texture distinctiveness. Section 6 describes how we detect boundary segments based on regions in order to improve robustness. Section 7 describes how landmarks are matched between sections.
 
@@ -134,106 +143,111 @@ textons
 
 \end{description}
 
-\section{Representing Texture using Histograms of Gabor Textons}
+\section{Representing Texture using Histograms of Gabor Textons} 
 
-Our algorithm starts with representing textures using responses of Gabor filters. Regions are detected based on similar textures. Regions with high contrast are selected. 
-
-  Boundaries that are consistently part of region
-
-We filter the image use Gabor filters.
-
-
-
+Images in the stack are filtered using Gabor filters with nine orientations and ten scales. From each image, 1000 feature vectors are sampled. We reduce the data by quantizing these 99 dimensional feature vectors using K-Means. First, 100 clusters are generated; then clusters with close centroids are merged. The final cluster centroids are the textons. 
 
 %\begin{figure}
 %\caption{Gabor Filters}
 %\includegraphics[width=0.5\textwidth]{../figures/gabor}
 %\end{figure}
 
+We further reduce the data by describing texture at the level of superpixels. For each superpixel, texture is represented by the histogram of the textons it contains. The superpixels are obtained using the SLIC algorithm. 
 
-rotation-invariant k-means clustering to form textons.
+Since different sections may be oriented at different angles, and in order for two identical but slightly rotated textures to match, we need the features to be rotation-invariant. To this end, we compute the energy distribution over orientations for each feature vector, and shift all feature vectors such that the modes of directional energy distributions are aligned. In this way, the texture is decoupled from directionality. Note that the directionality is still useful, particularly for describing fiber tracts.
 
-Over-segment into superpixels.
+\section{Evaluating Region Significance using Statistical Test}
 
-Describe texture using histogram of textons
+There are three factors in determining the significance score of a region. The first factor is the distinctiveness of this region's texture, or in other words, how different its texture is from the surrounds. Since textures are represented as histograms, this problem naturally leads to a statistical test on whether the region's average texton histogram and those of its surrounds are sampled from the same distribution. In our experiment, the chi-squared test is used. The p-value of this test can be used as a quantitative measure of the distinctiveness. Since a region often has many neighbouring regions with different textures, the test is made between the region's histogram and that of every surrounding superpixel, and the largest p-value is used. 
 
-\section{Detecting Significant Region Using Center-Surround Contrast}
+The second factor is the texture homogeneity within the region. This is defined in terms of the mean dissimilarity between all superpixels in the region and the region average.
 
-\yoav{Define the problem of finding regions+textures of high
-  statistical significance.}
-
-
-Brain anatomists usually label section images in terms of nuclei, which are dense groups of gray matter with the same phenotype. For example, Figure 1 shows the facial motor nucleus.
+The third factor stems from the fact that most nuclei have compact shapes. A common measure for the compactness of a closed curve is the isoperimetric quotient, defined as the square of the circumference divided by the enclosing area. We use the number of superpixels in the region as a proxy for the area and the number of surrounding superpixels as that for the circumference.
 
 
-Given the texture descriptors obtained from Gabor textons, we define the saliency of a region in terms of statistical significance computed for texton distributions, as we will elaborate below.
+\section{Finding Significant Regions with Region Growing and Clustering}
+
+Now that textures are represented using histograms of Gabor textons, we need to find regions with distinct texture. In this section, we describe a method for finding potential regions as sets of connected superpixels. We also propose a score that measures the significance of a region.
  
-\yuncong{We aim to find an algorithm that detects salient regions
-define saliency in terms of statistical significance. That is, salient regions should be those whose texton histogram is unlikely to be generated by those of the surrounds.}
+Region growing is performed on every superpixel. Starting from a singleton containing the seed superpixel, the greedy procedure considers all neighbours of the current set, and iteratively adds the one whose texton histogram is closest to the current region histogram. The growing stops when the region reaches 10\% of the total area. Eventually, the region at the point when the significance score is the largest is returned. Figure x shows examples of this procedure.
+
+%The termination criteria is a threshold on the histogram dissimilarity between the newly added superpixel and the set average. Instead of using a pre-determined threshold, we over-grow the region until its size reaches 10\% of the total area, and record this dissimilarity at every iteration. The dissimilarity would be the largest when the growing incorporates a superpixel that is the most different in hindsight, and thus the region just before this point is returned as the result of growing. This maximum dissimilarity can be used as a measure for the contrast, since every added superpixel is lower than this value.
+
+We call the set of superpixels that grows from a seed the \textit{expansion region} of the seed. If a region has distinct texture, the expansion regions grown from the superpixels inside this region are expected to be almost identical, and they will have no overlap with the expansion regions from superpixels outside of this region (see Figure x). In other words, the expansion regions form clusters. The denser a cluster is, the more significant the region it represents. Using Jaccard index as the pairwise distance, we group the expansion regions using hierarchical clustering. We then find the groups whose size is large enough, and select the expansion region with the highest significance score as the representative of that group.
+
+Finally, the representative expansion regions from all groups are ranked according to the significance scores. Figure x shows the top 10 regions.
+
+How to model the regions...
+
+%\section{Human Supervision}
+%
+%\yoav{Describe how salient region detection improves efficiency of human labeling.}
  
-First, region growing is performed on each superpixel. Starting from a region with one particular superpixel, the greedy procedure considers all superpixels that are neighbors of the current region, and iteratively adds the one whose texton distribution is most similar to the average distribution of the current region. Distance of texton distributions is computed using the Jenson-Shannon divergence, which is a symmetric measure.
+\section{Evaluating Boundary Robustness by Region Consensus}
 
-Instead of using a pre-determined threshold on the distribution distance between the newly added superpixel and the current region average as the termination criteria, we over-grow the region (until 10\% of the total area) while recording the distances at every iteration, and eventually return the region when the distance is the largest in retrospect. In this way, a region automatically grows to the place where the interior-exterior contrast is the greatest.
+In addition to compact-shaped regions, boundaries between structures are also useful landmarks. In many cases, nuclei are separate from each other and have clear closed contours. In other cases, a region has a clear boundary on one side, but on the other side is a gradual transition into the neighboring texture. One example is shown in Figure x. For these regions only partial boundary can be identified.
 
-We call the region that grows out of a seed superpixel the \textit{expansion cluster} of that superpixel.
+As region growing is sensitive to the seed, the expansion regions from different seeds in the same anatomical structure are not always consistent. However, most of them will agree on parts of the boundary that are stable (see Figure x). This motivates a region consensus approach for identifying the robust boundary segments.
 
-The significance of a region can be defined using a similar metric, that is the smallest distribution distance between any neighbor and the current region average. If the distance is the Kullback-Leibler divergence, then via Sanov's theorem, this value can be interpreted as the statistical significance of observing the interior texton histogram given that the closest neighbor's histogram is the true distribution.
+%Compared to modelling a complete contour, one additional benefit of modelling boundary segments, is that different sides of a region can be assigned different significance scores.
 
-\section{Human Supervision}
+The strategy is to let each expansion region vote for every of its boundary segment. The weight of the vote cast to a particular segment depends on the chi-squared distance between the region average and the superpixel at the other side of the segment. The boundariness score for a segment $(i,j)$ is:
 
-\yoav{Describe how salient region detection improves efficiency of human labeling.}
+$$
+b((i,j)) = \sum_{i: j\in \delta S_i} \frac{d(\bar{h}_i, h_j)}{|S_i|}
+$$
 
-\section{Detecting Boundaries by Region Consensus}
-
-\yuncong{Major points for this section: (1) Boundaries are more robust landmarks than regions. (2) Why detect  boundary segments? It is too crude to compute a single saliency value for a region. It is important to characterize saliency in different sides of the region, that is why we associate saliency value with boundary segments, rather than with entire regions. Also often regions are salient relative to each other, in this case using boundary is a more compact representation.}
-
-Because region growing is not perfect, the expansion clusters of superpixels that belong to the same nucleus are often not identical. Figure x shows one such example. In most cases, boundaries are more robust landmarks than areas.
-
-In addition to closed contours, partial boundaries are useful in cases when there is a clear boundary on one side of the nucleus where most clusters agree on, while on the other side no definitive boundary is present.
+We also record the set of superpixels that vote for a segment, and call it the \textit{supporter set} of the segment.
 
 
-We aim to identify robust boundary segments that are supported by a large number of clusters. The strategy is to let the clusters vote for their boundaries using their respective significance scores. Superpixels receive high boundary votes if they are at the exterior of many salient clusters.
+We discard boundary segments whose vote is lower than a threshold and model the remaining segments. Instead of modelling individual segments separately, we want to group segments that receive votes from the same group of expansion regions. Therefore we define the association between two boundary segments to be the Jaccard index of their supporter sets, and apply hierarchical clustering to obtain boundary segment groups. Each group represents a partial boundary. All partial boundaries are ranked according to the total vote of its segments.
+
+We model each partial boundary using three pieces of information: 
+\begin{itemize}
+first, the texture, set of exterior textures, and the midpoint set.
+
+\end{itemize}
 
 
-Instead of letting each superpixel as boundary separately, vote for them as a set.
-
-Each region votes according to their saliency scores.
-
-Each boundary is described by a tuple that consists of four elements:
-
-1. x-y positions of every superpixel on the boundary
-
-2. centroid of the expansion cluster inside the boundary
-
-3. the average texton distribution of interior superpixels
-
-4. a list of texton distributions of exterior superpixels (more precisely, the closest layer of superpixels on the outside of the boundary).
 
 \section{Matching Boundaries from Different Sections}
 
-distance = interior + exterior + shape + location 
-\\
+In this section, we design a distance function for comparing two partial boundaries. This function is a weighted combination of the differences in four aspects.
 
-Distance between boundaries are defined as a weighted combination of:
+The first term is the difference of the interior textures. This is simply the $\chi^2$ distance between the texton histograms.
 
-1. Jenson-Shannon divergence between interior distributions
+The minimum bipartite matching for the two sets of boundary segments is computed using the Hungarian algorithm.
 
-2. symmetric Hausdorff distances between the two sets of exterior distributions. That is, the maximum among the distances between each distribution and its closest distribution from the other set. Here the distance is the Jenson-Shannon divergence.
+The shape context descriptors characterize the local shape around each of a set of sample points using a histogram.
 
-3. shape dissimilarity: total chi2-distances of shape context descriptors after correspondences are identified for superpixels on two boundaries using dynamic programming. (This is essentially the Shape Distance in Section 5.1 of Belongie's paper)
 
-4. spatial distance: Euclidean distance between cluster centroids
-\\
+The distance between two segments depends both on the similarity of the shape context descriptors and on the similarity of the texture at the exterior of the boundary segment.
 
-Boundaries are detected from two sections and their pairwise distances are computed. A pair of boundaries are matched if they are the closest boundary of each other.
+For each boundary, the shape context descriptors are computed for the point set consisting of the midpoint of every boundary segment.
+
+
+the exterior of the boundary segment
+
+The fourth term is the spatial distance between the boundaries. This is the Euclidean distance between the center of mass of the boundaries' midpoint sets.
+
+%exterior textures: the symmetric Hausdorff distances between the two sets of exterior distributions. That is, the maximum among the $\chi^2$ distances between each distribution and its closest distribution from the other set.
+
+%shape: the total $\chi^2$ distances of shape context descriptors after the superpixels on two boundaries using dynamic programming. (This is essentially the Shape Distance in Section 5.1 of Belongie's paper)
+
+%location: the Euclidean distance between cluster centroids.
+
+$$D(c_1, c_2) = w_{int} \cdot \chi^2(\bar{h}_1, \bar{h}_2) + 
+w_{ext} \cdot \max_{i \in \delta c_1, j\in \delta c_2}(h_i, h_j) +
+w_{sha} \cdot \sum_{i \in \delta c_1, j \in \delta c_2, i, j \mathtt{matches}} \chi^2(s_i, s_j)
+$$
+
+Boundaries are detected from two sections and their pairwise distances are computed. A pair of boundaries are matched if they are both the closest boundary of one another.
 
 \section{Experiments}
 
 \subsection{comparison with human labelings}
 
-Shows the results of our algorithm is comparable to human labeling.
-
-show results for RS141. (Do we need to do more than one stacks here? I think one stack already shows enough variations. A coronal stack would be good, but we don't have any now).
+We test our algorithm on a series of section images of a rat brainstem, stained with Cresyl Violet for Nissl substance in neurons. The images are scanned at 2 microns per pixel, showing individual neuronal cell bodies. Two experienced anatomists are asked to label the same images for anatomical regions that are recognizable from the images .
 
 \subsection{robustness of matching}
 
