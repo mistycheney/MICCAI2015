@@ -173,12 +173,13 @@ Since different sections may be oriented at different angles, and in order for t
 
 Now that textures are represented using histograms of Gabor textons, we need to find regions with distinct texture. In this section, we propose a score that measures the significance of a region. In the next section, we describe a method for finding potential regions as sets of connected superpixels. 
 
-There are three factors in determining the significance score of a region. The first factor is the distinctiveness of this region's texture, or in other words, how different its texture is from the surrounds. Since textures are represented as histograms, this problem naturally leads to a statistical test on whether the region's average texton histogram and those of its surrounds are sampled from the same distribution. In our experiment, the chi-squared test is used. The p-value of this test can be used as a quantitative measure of the distinctiveness. Since a region often has many neighbouring regions with different textures, the test is made between the region's histogram and that of every surrounding superpixel, and the largest p-value is used. 
+The significance score of a region is a linear combination of three terms. 
+
+The first factor is the distinctiveness of this region's texture, or in other words, how different its texture is from the surrounds. Since textures are represented as histograms, this problem naturally leads to a statistical test on whether the region's average texton histogram and those of its surrounds are sampled from the same distribution. In our experiment, the chi-squared test is used. The p-value of this test can be used as a quantitative measure of the distinctiveness. Since a region often has many neighbouring regions with different textures, the test is made between the region's histogram and that of every surrounding superpixel, and the largest p-value is used. 
 
 The second factor is the texture homogeneity within the region. This is defined in terms of the mean dissimilarity between all superpixels in the region and the region average.
 
 The third factor stems from the fact that most nuclei have compact shapes. A common measure for the compactness of a closed curve is the isoperimetric quotient, defined as the square of the circumference divided by the enclosing area. We use the number of superpixels in the region as a proxy for the area and the number of surrounding superpixels as that for the circumference.
-
 
 \section{Finding Significant Regions with Region Growing and Clustering}
 
