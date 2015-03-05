@@ -92,7 +92,6 @@ Brightfield and fluorescent imaging is a fundamental tool in mouse brain studies
 
 %On the one hand, this allows the new specimen to be compared with annotations and cell type maps collected from previous specimens; on the other hand, new specimens augment the atlas by introducing annotations for new structures or by providing additional cell type data demonstrated by new markers.
 
-
 The Allen Mouse Brain Atlas is constructed by registering sections of a single brain.
 
  While it is useful as a visual guide for annotating new images by hand, there is no easy solution for aligning new image series to the atlas. Software for registration usually requires heavy human intervention, such as picking the landmarks or adjusting parameters that lack intuitive meaning.
@@ -243,7 +242,7 @@ Landmarks are detected from two sections and their pairwise distances are comput
 This system reduces human supervision in annotating brain images. Without any prior annotation, the region landmarks detected by the system can serve as suggestions for significant regions that require annotation. A human labeller then inspects the suggested landmarks. If a landmark is judged to correspond to a real anatomical structure, the human labeller gives it a name and the model of this landmark is stored in the atlas. The human labeler can also manually correct landmarks that are misplaced or create new annotations.
 The stored models are compared to the landmarks detected on a new image. If some detected landmarks match the models in the atlas, annotation of these landmarks can be transferred to the new image automatically.
 
-In addition, both the region and boundary landmarks serve as basis for registration, which is part of our plan for future work.
+%In addition, both region and boundary landmarks that are matched can be used for correspondence-based registration. This is part of our plan for future work.
 
 
 \section{Experiments}
@@ -257,12 +256,13 @@ We test our algorithm on a series of section images of a rat brainstem, stained 
 Shows that matchings are robust to distortion and shape change.
 Also shows that our distance measure is a sensible one: each of the four terms is important. We show this by changing the term weightings, and then compare matching results.
 
-\section{Future Work}
+\section{Conclusion and Future Work}
 
-use detected landmarks for registration
+In this paper we described a system for detecting region and boundary landmarks from mouse brain images. It grows expansion regions from every superpixel. Based on these region proposals, significant regions such as nuclei and fiber tracts are identified using clustering. These regions are shown to correspond well with real anatomical structures. To complement region landmarks, confident boundary segments are also found using consensus voting. Landmarks from different sections can be matched using a distance function that is robust under distortion.
 
-Learn dictionary using deep neural networks, ICA, ...
+The next step of this project is to use matched landmarks to align image sections, as well as to align sections to the three-dimensional coordinate space defined by the atlas.
 
+We will explore new representations of texture. A promising direction is to learn visual dictionary directly from the images using independent component analysis or deep neural networks.
 
 
 %
