@@ -16,12 +16,12 @@
 
 \begin{document}
 
-%\abovedisplayskip=2pt 
-%\abovedisplayshortskip=1pt
-%\belowdisplayskip=2pt 
-%\belowdisplayshortskip=1pt
-%\textfloatsep=5pt
-%\intextsep=3pt
+\abovedisplayskip=2pt 
+\abovedisplayshortskip=1pt
+\belowdisplayskip=2pt 
+\belowdisplayshortskip=1pt
+\textfloatsep=5pt
+\intextsep=3pt
 
 %
 %\mainmatter              % start of the contributions
@@ -32,14 +32,16 @@
 %                                     also used for the TOC unless
 %                                     \toctitle is used
 %
-\author{Yuncong Chen, David Kleinfeld, Martyn Goulding \and Yoav Freund}
+\author{*******\inst{1}, *******\inst{2}, *******\inst{3} \and *******\inst{1}}
 %
 \authorrunning{Yuncong Chen et al.} % abbreviated author list (for running head)
 %
 %%%% list of authors for the TOC (use if author list has to be modified)
 % \tocauthor{Yuncong Chen, Yoav Freund}
 %
-\institute{Department of Computer Science and Engineering, \\University of California, San Diego, La Jolla, CA 92122, USA}
+\institute{************************
+\and ************************
+\and ************************}
 
 \maketitle              % typeset the title of the contribution
 \begin{abstract}
@@ -157,10 +159,10 @@ where $pval(\cdot,\cdot)$ is the p-value of applying the chi-square test for ind
 The second term is the texture homogeneity within the region, defined as the mean p-value of chi-square tests between all superpixels in the region and the region's average:
 $$F^{coh}(S) = \frac{1}{|S|} \sum_{i\in S} pval(h_S, h_i)$$
 
-The third term stems from the fact that most region landmarks have compact shapes. A common measure for the compactness of a closed curve is the isoperimetric quotient, defined as the enclosing area divided by the square of the circumference. We use the number of surrounding superpixels as a proxy for the circumference, and the number of superpixels in the region as that for the area. Small 
+The third term stems from the fact that most region landmarks have compact shapes. A common measure for the compactness of a closed curve is the isoperimetric quotient, defined as the enclosing area divided by the square of the circumference. We use the number of surrounding superpixels as a proxy for the circumference, and the number of superpixels in the region as that for the area. 
 $$F^{comp}(S) = \frac{|T(S)|}{|S|^2}$$
 
-The overall significance score $F(S) = F^{cont}(S) + F^{coh}(S) + F^{comp}(S)$.
+The overall significance score $F(S) = w_1 \cdot F^{cont}(S) + w_2 \cdot F^{coh}(S) + w_3 \cdot F^{comp}(S)$, with weights chosen empirically.
 
 
 \section{Finding Significant Regions with Region Growing and Clustering}
@@ -193,7 +195,6 @@ We call the set of superpixels that grows from a seed superpixel $k$ the \textit
 \section{Identify Robust Boundaries by Region Consensus}
 
 Sometimes a region gradually transitions into neighboring texture on one side, but has a clear boundary on the other side. The method described in the previous section may not capture this inhomogeneous region, but the open boundary is nonetheless a perfect landmark. Figure \ref{fig:RobustBoundaryExample} shows such an example. Notice how much the proposals from seeds in such region vary, but many of them still agree on the clear boundary. This motivates a consensus-based approach for evaluating boundary robustness, in which each region proposal votes for the segments on its boundary.
-
 %Since region growing is sensitive to the seed, 
 \begin{figure}
 	\includegraphics[width=\textwidth]{../figures/RobustBoundaryExampleHighlightLine.png}
@@ -279,7 +280,7 @@ We test our algorithm on a series of 30 section images of a nissl-stained mouse 
 The landmark matching algorithm is applied to all 30 pairs of consecutive images. In order to test the robustness of matching under large displacement, we remove the spatial proximity term from the landmark distance function, leaving only the texture and shape terms. A human evaluator then judges whether a matching is correct, partially correct, or incorrect. Among all 166 matchings returned by the algorithm, 106 are correct (63\%), 34 are partially correct (22\%) and 26 are wrong (15\%). One example is shown in Figure \ref{fig:LandmarkMatch}. This demonstrates the effectiveness of texture modelling. Even though some landmarks change shape significantly, the algorithm still finds the correct matchings.
 
 \begin{figure}
-	\includegraphics[width=\textwidth]{../figures/MatchedLMs_0006_0007.png}
+	\includegraphics[width=\textwidth]{../figures/MatchingHorizontal.png}
 	\caption{Landmark matching example. Matched landmarks are marked with the same color and number. Note that matchings are found based only on texture and shape. Matching 13 is made possible by modelling both open boundaries and close boundaries. Landmarks such as 1 and 9 show considerable shape change, but are still matched.}
 	\label{fig:LandmarkMatch}
 \end{figure}
