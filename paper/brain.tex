@@ -55,15 +55,23 @@ In particulcar, we describe an unsupervised approach for identifying and matchin
 
 \section{Introduction}
 
-Brightfield and fluorescent imaging is a fundamental tool in mouse brain studies. As sectioning and image acquisition become more efficient, there is a need to facilitate the development of a digital atlas, i.e. a brain-wide map annotated with anatomical structures as well as cell type, tract tracing and physiological data. Such map serves as the underpinning of brain circuit analysis and quantitative analysis of phenotypical variation.
+In this paper we describe a method for the automatic detection of landmarks in histology images of mouse brain sections. The purpose is to facilitate image registration and atlas generation. By aligning images of nissl and fluorescent-stained brain sections, we aim to create a 3D digital atlas for the mouse brainstem, which incorporates cell type, tract tracing and other physiological data. The novelty of our method is in the use of unsupervised learning to find regions with distinct texture and clear boundaries, which reduces time-consuming human labelling.
 
-An atlas is typically constructed by mapping image series of different studies to a common coordinate system, and aggregating the information. 
-Images of different modalities or specimens stained for different targets can be superimposed. For example, the Allen Mouse Brain Atlas\cite{lein2007genome} computes the expression energy of different genes by collecting statistics from in-situ hybridization images of all the studies. 
-In other cases, inter-specimen variation is interested. For example, the Waxholm Space atlas\cite{lee2005standard} provides an anatomical probability map that gives the probability of each voxel belonging to a particular anatomical structure. The probabilities are computed from a large number of co-registered specimens.
+Figure x shows a typical image of nissl-stained mouse brainstem section. Although the brainstem does not have salient edges like the cortex, it contains many compact neuron clusters (nuclei) and striated regions (fiber tracts). Both types of structure have distinct texture that can be detected and modelled.
 
-It is interesting to note that, on the one hand, if the specimen is labelled, annotated atlas facilitates landmark-based registration. On the other hand, atlas-guided annotation requires the specimen be brought into registration with the atlas first, which is often done by manually picking landmarks. In either case, time-consuming human labelling is needed. To alleviate this bottleneck, we propose to use machine learning to model the landmarks with appearance features. By training landmark detectors and storing them in the atlas, landmarks can be automatically identified in new images. These landmarks guide both intra-specimen and specimen-atlas registration. Landmark models are then updated based on registered new images.
+In this work, We use semi-supervised learning to create a library of texture and shape detectors. They can be applied to identify landmarks from new images and also be updated by incorporating new data. This is at the center of our vision of integrating atlas-guided annotation, landmark-based registration and atlas generation into an iterative framework.
 
-This paper describes a first step towards building a three-dimensional histology atlas for mouse brainstem. The system will integrate atlas-guided annotation, landmark-based registration and atlas generation into an iterative framework, allowing the atlas to continue improving itself using new data. The particular aspect described in this paper is the automatic detection and modelling of brainstem landmarks.
+% represent appearance landmark using binarized gradient orientation histograms and boundary landmark using curvature, and use MRF for registration.
+
+% \cite{song20133d} proposing an unsupervised content classification method, which automatically identifies common content classes from differently stained histology image pair
+
+%Maximizing mutual information 
+
+%Brightfield and fluorescent imaging is a fundamental tool in mouse brain studies. As sectioning and image acquisition become more efficient, there is a need to facilitate the development of a digital atlas, i.e. a brain-wide map annotated with anatomical structures as well as cell type, tract tracing and physiological data. Such map serves as the underpinning of brain circuit analysis and quantitative analysis of phenotypical variation.
+
+%It is interesting to note that, on the one hand, if the specimen is labelled, annotated atlas facilitates landmark-based registration. On the other hand, atlas-guided annotation requires the specimen be brought into registration with the atlas first, which is often done by manually picking landmarks. In either case, time-consuming human labelling is needed. To alleviate this bottleneck, we propose to use machine learning to model the landmarks with appearance features. By training landmark detectors and storing them in the atlas, landmarks can be automatically identified in new images. These landmarks guide both intra-specimen and specimen-atlas registration. Landmark models are then updated based on registered new images.
+
+%This paper describes a first step towards building a three-dimensional histology atlas for mouse brainstem. The system will integrate atlas-guided annotation, landmark-based registration and atlas generation into an iterative framework, allowing the atlas to continue improving itself using new data. The particular aspect described in this paper is the automatic detection and modelling of brainstem landmarks.
 
 %making it particularly suitable for processing a large number of specimens in an incremental fashion. 
 %Most existing histology atlases generation approaches align the histology series to an MRI template volume, often based on manually picked landmarks. In comparison, we aim to construct the atlas using only histology images. We also aim to minimize human labelling by using unsupervised algorithms to detect and model salient brain regions.
@@ -76,18 +84,41 @@ This paper describes a first step towards building a three-dimensional histology
 
 %One crucial component in our system is identifying the landmarks. Until the region models are trained with sufficiently many examples, the system must obtain the annotation in other ways. Having human labellers do the annotation is time-consuming. In this paper, we propose an automatic approach for identifying potential landmarks including significant regions and boundaries.
 
-Unlike the cerebrum and the cerebellum, where high-contrast cortex presents clear edges, the brainstem mostly contains nuclei, which are compact neuron clusters with homogeneous and distinct texture, and
-%For example, Figure 1 shows the facial motor nucleus. 
-%Neurons in each nucleus have similar size, shape and stain sensitivity, often also demonstrating uniform density and particular directionality. This gives each nuclei a distinctive texture, allowing them to be robustly identified from the image. The fact that they are well localized also makes them perfect landmarks for registration. 
-fiber tracts, which are recognizable for their striated texture. 
-%In particular, the directionality of a tract serves as an important feature of the landmark.
-This motivates our algorithm to model texture, and detect landmarks including both compact regions and boundaries.
+%Unlike the cerebrum and the cerebellum, where high-contrast cortex presents clear edges, the brainstem mostly contains nuclei, which are compact neuron clusters with homogeneous and distinct texture, and
+%%For example, Figure 1 shows the facial motor nucleus. 
+%%Neurons in each nucleus have similar size, shape and stain sensitivity, often also demonstrating uniform density and particular directionality. This gives each nuclei a distinctive texture, allowing them to be robustly identified from the image. The fact that they are well localized also makes them perfect landmarks for registration. 
+%fiber tracts, which are recognizable for their striated texture. 
+%%In particular, the directionality of a tract serves as an important feature of the landmark.
+%This motivates our algorithm to model texture, and detect landmarks including both compact regions and boundaries.
 
-This paper is organized as the following: Section 2 describes how we represent textures using Gabor filters and superpixels. Section 3 and 4 explains how we identify potential landmark regions based on texture distinctiveness. Section 5 describes how we detect stable boundary segments to complement region landmarks. Section 6 describes how landmarks are matched between sections.
+The remaining of this paper is organized as the follows. Section 2 describes how we represent textures using Gabor filters and superpixels. Section 3 and 4 explains how we identify potential landmark regions based on texture distinctiveness. Section 5 describes how we detect stable boundary segments to complement region landmarks. Section 6 describes how landmarks are matched between sections.
 
 %Our method is not a segmentation algorithm. As we are only interested in identifying and modelling a small proportion of the image that are of interest to the researcher.
 
 %We only apply our method to nissl-stained brain sections. For building the atlas, we need to make sure it is applicable to fluorescent images.
+
+\section{Related Work}
+
+
+Currently, histology atlas is most often constructed by aligning the histology series to an MRI template volume. This often require experimentalist to manually identify landmarks.
+
+The Allen Brain Atlas\cite{lein2007genome} and Waxholm Space \cite{lee2005standard} construct the histology atlas by aligning histology series to an MRI template volume \cite{yushkevich20063d}.
+
+
+based on a combination of high-frequency sectionto-section
+histology registration with low-frequency histology to (ex-cranio) MRI registration (Yushkevich, 
+
+
+An atlas is typically constructed by mapping image series of different studies to a common coordinate system, and aggregating the information. 
+Images of different modalities or specimens stained for different targets can be superimposed. For example, the Allen Mouse Brain Atlas\cite{lein2007genome} computes the expression energy of different genes by collecting statistics from in-situ hybridization images of all the studies. 
+In other cases, inter-specimen variation is interested. For example, the Waxholm Space atlas\cite{lee2005standard} provides an anatomical probability map that gives the probability of each voxel belonging to a particular anatomical structure. The probabilities are computed from a large number of co-registered specimens.
+
+
+Currently most histology atlases are constructed by registering histology series to an MRI template volume. This often requires experimentalist to manually identify landmarks in each section, which is labor intensive. 
+In contrast, our method would require the experimentalist to validate our library of texture and shape detectors. Once those have been validated, the process is completely automatic.
+
+
+There has been much work on reconstructing 3D volume from histology sections. Intensity-based methods \cite{ourselin2001reconstructing, roberts2012toward} uses block-matching to compute a regularized displacement field. Other methods rely on detecting gradients in the image, and compute alignment by smoothing high-gradient edges \cite{cifor2011smoothness, bagci2010automatic, haber2006intensity}. The level of details in histology images also motivates the use of more elaborate descriptors, including SIFT \cite{sun2012nearly}, binarized gradient orientation histogram \cite{kurkure2011landmark} and bag of multiple types of features \cite{cruz2011visual}. 
 
 
 \section{Representing Texture using Histograms of Gabor Textons} 
@@ -255,7 +286,7 @@ The landmark matching algorithm is applied to all 30 pairs of consecutive images
 
 \begin{figure}
 	\includegraphics[width=\textwidth]{../figures/MatchedLMs_0006_0007.png}
-	\caption{}
+	\caption{Landmark matching example. Matched landmarks are marked with the same color and number. No position information is used. Notice how matching 13 is made possible by modelling both open boundaries and close boundaries. Many landmarks, for example, 1 and 9, shows considerable shape change, but are still matched.}
 	\label{fig:LandmarkMatch}
 \end{figure}
 
