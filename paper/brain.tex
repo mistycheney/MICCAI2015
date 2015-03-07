@@ -44,9 +44,25 @@
 \maketitle              % typeset the title of the contribution
 \begin{abstract}
 
-Brightfield and fluorescent imaging of whole brain sections is a fundamental tool in anatomical studies on brain functions. As sectioning and imaging become more efficient, there is an increasing need to automate the post-processing of sections for alignment and three dimensional visualization. There is a further need to facilitate the development of a digital atlas, i.e. a brain-wide map annotated with cell type and tract tracing data, which serves as the underpinning for circuits analysis as well as for quantitative analysis of phenotypical variation. Currently, construction of such maps requires tedious human labelling. In this work we describe the first steps in developing a semi-automated system to construct a histology atlas of mouse brainstem that combines atlas-guided annotation, landmark-based registration and atlas generation in an iterative framework. 
-%This atlas stores landmark models, uses them to detect landmarks from new images and maps the images onto the atlas's standardized coordinate system; meanwhile, the models in the atlas are updated based on newly registered images.
-In particulcar, we describe an unsupervised approach for identifying and matching region and boundary landmarks, based on modelling texture. Experiments show that the detected landmarks correspond well with brain structures, and matching is robust under distortion. The results serve as a promising basis for the next stage of registration and atlas building.
+Brightfield and fluorescent imaging of whole brain sections are
+fundamental tools of research in the Kleinfeld and Goulding Labs.  As
+sectioning and imaging become more efficient, there is an increasing
+need to automate the post-processing of sections for alignment and
+three dimensional visualization. There is a further need to facilitate
+the development of a digital atlas, i.e. a brain-wide map annotated
+with cell type and tract tracing data, which would allow the automatic
+registration of images stacks to a common coordinate
+system. Currently, registration of slices requires manual
+identification of landmarks. In this work we describe the first steps
+in developing a semi-automated system to construct a histology atlas
+of mouse brainstem that combines atlas-guided annotation,
+landmark-based registration and atlas generation in an iterative
+framework.
+We describe an unsupervised approach for identifying and matching
+region and boundary landmarks, based on modelling texture. Experiments
+show that the detected landmarks correspond well with brain
+structures, and matching is robust under distortion. These results
+will serve as the basis for registration and atlas building.
 
 \keywords{landmark detection, atlas building, mouse brain, registration, automated annotation}
 
@@ -55,7 +71,20 @@ In particulcar, we describe an unsupervised approach for identifying and matchin
 
 \section{Introduction}
 
-In this paper we describe a method for the automatic detection of landmarks in histology images of mouse brain sections. The purpose is to facilitate image registration and atlas generation. By aligning images of nissl and fluorescent-stained brain sections, we aim to create a 3D digital atlas for the mouse brainstem, which incorporates cell type, tract tracing and other physiological data. The novelty of our method is in the use of unsupervised learning to find regions with distinct texture and clear boundaries, which reduces time-consuming human labelling.
+In this paper we describe a method for the automatic detection of
+landmarks in histology images of mouse brain sections. The purpose is
+to facilitate image registration and atlas generation. By aligning
+images of nissl and fluorescent-stained brain sections, we aim to
+create a digital atlas for the mouse brainstem, which incorporates
+cell type, tract tracing and other physiological data. Unlike most
+brain atlases which are intended to be viewed by a human, the atlas we
+aim to build is intended to be used by a computer. Specifically, the
+goal is to represent the landmarks in a datastructure that would be
+used by an algorithm to automatically align a whole stack to a common
+coordinate system.  The novelty of the work described here is the use
+of unsupervised learning to find regions with distinct texture and
+clear boundaries. This will reduce the manual work needed to identify
+reliable landmarks.
 
 Figure x shows a typical image of nissl-stained mouse brainstem section. Although the brainstem does not have salient edges like the cortex, it contains many compact neuron clusters (nuclei) and striated regions (fiber tracts). Both types of structure have distinct texture that can be detected and modelled.
 
