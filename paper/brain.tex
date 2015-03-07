@@ -86,11 +86,11 @@ of unsupervised learning to find regions with distinct texture and
 clear boundaries. This will reduce the manual work needed to identify
 reliable landmarks.
 
-Figure x shows a typical image of nissl-stained mouse brainstem section. Although the brainstem does not have salient edges like the cortex, it contains many compact neuron clusters (nuclei) and striated regions (fiber tracts). Both types of structure have distinct texture that can be detected and modelled.
+Figure \ref{fig:TextonHistComparison} shows a typical image of nissl-stained mouse brainstem section. Although the brainstem does not have salient edges like the cortex, it contains many compact neuron clusters (nuclei) and striated regions (fiber tracts). Both types of structure have distinct texture that can be detected and modelled.
 
 We use semi-supervised learning to create a library of landmark detectors based on texture and shape. They can be applied to identify landmarks from new images and also be updated by incorporating new data. This is at the center of our vision of integrating atlas-guided annotation, landmark-based registration and atlas generation into an iterative framework.
 
-A big advantage of our approach is that, instead of requiring an experimentalist to label every region of interest for the learning system, our method automatically detects potential landmark and only needs the experimentalist to validate our library of landmark detectors. Once those have been validated, the process is completely automatic.
+%A big advantage of our approach is that, instead of requiring an experimentalist to label every region of interest for the learning system, our method automatically detects potential landmark and only needs the experimentalist to validate our library of landmark detectors. Once those have been validated, the process is completely automatic.
 
 % represent appearance landmark using binarized gradient orientation histograms and boundary landmark using curvature, and use MRF for registration.
 
@@ -162,9 +162,11 @@ Since different sections may be oriented at different angles,
 %and in order for two identical but slightly rotated textures to match, 
 we need the features to be rotation-invariant. For this purpose, before doing K-Means, we compute the energy distribution over orientations for each Gabor feature vector, and shift all feature vectors such that the modes of the directional energy distributions are aligned. In this way, the texture is decoupled from directionality.
 
+
+%	\includegraphics[width=.5\textwidth]{../figures/TextonHistComparisonWithArrows.png}
 \begin{figure}
-	\includegraphics[width=.5\textwidth]{../figures/TextonHistComparisonWithArrows.png}
-	\caption{Top: part of the original image with superpixels overlaid. Middle: texton map of the same area. Bottom: texton histograms of three superpixels with different textures.}
+	\includegraphics[width=\textwidth]{../figures/OrigImgTexMapWithInset.png}
+	\caption{Left: A typical image of mouse brainstem section. Right top: part of the original image with superpixels overlaid. Middle: texton map of the same area. Bottom: texton histograms of three superpixels with different textures.}
 	\label{fig:TextonHistComparison}
 \end{figure}
 
@@ -270,19 +272,19 @@ where $m_{B_1}$ and $m_{B_2}$ are the center of mass of boundaries $B_1$ and $B_
 
 Using this distance function, we compute the pairwise distances for two sets of landmarks detected from different sections. Two landmarks are matched if they are simultaneously the closest landmark to each another.
 
-\section{Human Supervision}
-
-This system reduces human supervision in annotating brain images. Without any prior annotation, the region landmarks detected by the system can serve as suggestions for significant regions that require annotation. A human labeller then inspects the suggested landmarks. If a landmark is judged to correspond to a real anatomical structure, the human labeller gives it a name and the model of this landmark is stored in the atlas. The human labeler can also manually correct landmarks that are misplaced or create new annotations.
-The stored models are compared to the landmarks detected on a new image. If some detected landmarks match the models in the atlas, annotation of these landmarks can be transferred to the new image automatically.
-
-%In addition, both region and boundary landmarks that are matched can be used for correspondence-based registration. This is part of our plan for future work.
+%\section{Human Supervision}
+%
+%This system reduces human supervision in annotating brain images. Without any prior annotation, the region landmarks detected by the system can serve as suggestions for significant regions that require annotation. A human labeller then inspects the suggested landmarks. If a landmark is judged to correspond to a real anatomical structure, the human labeller gives it a name and the model of this landmark is stored in the atlas. The human labeler can also manually correct landmarks that are misplaced or create new annotations.
+%The stored models are compared to the landmarks detected on a new image. If some detected landmarks match the models in the atlas, annotation of these landmarks can be transferred to the new image automatically.
+%
+%%In addition, both region and boundary landmarks that are matched can be used for correspondence-based registration. This is part of our plan for future work.
 
 
 \section{Experiments}
 
-\subsection{effectiveness of landmark detection}
+\subsection{Comparison to Human Labelling}
 
-We test our algorithm on a series of 30 section images of a nissl-stained mouse brainstem. The images are scanned at 2 microns per pixel, showing individual neuronal cell bodies. Both types of landmarks are detected on all images. For each image we use the top 30 closed boundary and the top 10 open boundary. Figure \ref{fig:TopRegions} shows the landmarks detected from two consecutive sections. Most identifiable nuclei as well as fiber tracts are detected on both sections.
+We test our algorithm on a series of 30 section images of a nissl-stained mouse brainstem. The images are scanned at 2 microns per pixel, showing individual neuronal cell bodies. Both types of landmarks are detected on all images. For each image we use the top 20 closed boundary and the top 10 open boundary. Figure \ref{fig:TopRegions} shows the landmarks detected from one image. Also shown is a version created by a human labeller who annotated for nuclei and fiber tracts with the help of a printed atlas. Most significant structures from the human labelling are detected by the algorithm.
 
 %\begin{figure}
 %	\includegraphics[width=\textwidth]{../figures/Top20Regions_0007.png}
@@ -291,20 +293,20 @@ We test our algorithm on a series of 30 section images of a nissl-stained mouse 
 %\end{figure}
 
 \begin{figure}
-	\includegraphics[width=\textwidth]{../figures/TopRegions_0006_0007_Horizontal.png}
-	\caption{Top 20 boundaries detected in consecutive sections}
+	\includegraphics[width=\textwidth]{../figures/CompareHuman.png}
+	\caption{Left: top 20 landmarks detected by the algorithm. Right: human labelling for recognizable nuclei and white matter.}
 	\label{fig:TopRegions}
 \end{figure}
 
 %Our algorithm demonstrates high recall.
 
-\subsection{robustness of matching}
+\subsection{Robustness of Matching}
 
-The landmark matching algorithm is applied to all 30 pairs of consecutive images. In order to test the robustness of matching under large displacement, we remove the spatial proximity term from the landmark distance function, leaving only the texture and shape terms. A human evaluator then judges whether a matching is correct, partially correct, or incorrect. Among all 166 matchings returned by the algorithm, 106 are correct (63\%), 34 are partially correct (22\%) and 26 are wrong (15\%). One example is shown in Figure \ref{fig:LandmarkMatch}. This demonstrates the effectiveness of texture modelling. Even though some landmarks change shape significantly, the algorithm still finds the matchings.
+The landmark matching algorithm is applied to all 30 pairs of consecutive images. In order to test the robustness of matching under large displacement, we remove the spatial proximity term from the landmark distance function, leaving only the texture and shape terms. A human evaluator then judges whether a matching is correct, partially correct, or incorrect. Among all 166 matchings returned by the algorithm, 106 are correct (63\%), 34 are partially correct (22\%) and 26 are wrong (15\%). One example is shown in Figure \ref{fig:LandmarkMatch}. This demonstrates the effectiveness of texture modelling. Even though some landmarks change shape significantly, the algorithm still finds the correct matchings.
 
 \begin{figure}
 	\includegraphics[width=\textwidth]{../figures/MatchedLMs_0006_0007.png}
-	\caption{Landmark matching example. Matched landmarks are marked with the same color and number. No position information is used. Notice how matching 13 is made possible by modelling both open boundaries and close boundaries. Many landmarks, for example, 1 and 9, shows considerable shape change, but are still matched.}
+	\caption{Landmark matching example. Matched landmarks are marked with the same color and number. Note that matchings are found based only on texture and shape. Matching 13 is made possible by modelling both open boundaries and close boundaries. Landmarks such as 1 and 9 show considerable shape change, but are still matched.}
 	\label{fig:LandmarkMatch}
 \end{figure}
 
@@ -357,17 +359,17 @@ The landmark matching algorithm is applied to all 30 pairs of consecutive images
 
 \section{Conclusion and Future Work}
 
-In this paper we described algorithms for detecting region and boundary landmarks from histology images of mouse brainstem. Region proposals are grown from superpixels, based on which significant regions such as nuclei and fiber tracts are identified using clustering. These regions are shown to correspond well with real anatomical structures. To complement region landmarks, robust boundary segments are also found by consensus voting. Landmarks from different sections can be matched using a distance function that is robust under distortion.
+In this paper we described algorithms for detecting region and boundary landmarks from histology images of mouse brainstem. Region proposals are grown from superpixels, based on which significant regions such as nuclei and fiber tracts are identified using clustering. Detected regions are shown to correspond well with real anatomical structures. To complement region landmarks, robust boundary segments are also found by consensus voting. Landmarks from different sections can be matched using a distance function that is robust under distortion.
 
-The next step of this project is to use the matched landmarks for intra-specimen registration, and further co-register multiple specimens to generate the atlas.
+Our next step is to use the matched landmarks for intra-specimen registration, and further co-register multiple specimens to generate the atlas. Meanwhile, we also plan to include human feedback in the learning loop. Although the advantage of our approach is reducing human supervision, it is important for human experts to correct wrong labellings made by the algorithm in order to learn accurate models for landmarks. Instead of requiring them to label every region of interest, our method only needs them to validate our library of detectors. Once those have been validated, the process is completely automatic.
 
-We plan to explore how to most efficiently use human supervision
+%This system reduces human supervision in annotating brain images. Without any prior annotation, the region landmarks detected by the system can serve as suggestions for significant regions that require annotation. A human labeller then inspects the suggested landmarks. If a landmark is judged to correspond to a real anatomical structure, the human labeller gives it a name and the model of this landmark is stored in the atlas. The human labeler can also manually correct landmarks that are misplaced or create new annotations.
+%The stored models are compared to the landmarks detected on a new image. If some detected landmarks match the models in the atlas, annotation of these landmarks can be transferred to the new image automatically.
+%
+%%In addition, both region and boundary landmarks that are matched can be used for correspondence-based registration. This is part of our plan for future work.
 
-We will explore new representations of texture. A promising direction is to learn visual dictionary directly from the images using independent component analysis or deep neural networks.
 
-
-
-
+%We will also explore new representations of texture. A promising direction is to learn visual dictionary directly from the images using independent component analysis or deep neural networks.
 
 %
 % ---- Bibliography ----
