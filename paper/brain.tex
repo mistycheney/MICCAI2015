@@ -59,7 +59,9 @@ In this paper we describe a method for the automatic detection of landmarks in h
 
 Figure x shows a typical image of nissl-stained mouse brainstem section. Although the brainstem does not have salient edges like the cortex, it contains many compact neuron clusters (nuclei) and striated regions (fiber tracts). Both types of structure have distinct texture that can be detected and modelled.
 
-In this work, We use semi-supervised learning to create a library of texture and shape detectors. They can be applied to identify landmarks from new images and also be updated by incorporating new data. This is at the center of our vision of integrating atlas-guided annotation, landmark-based registration and atlas generation into an iterative framework.
+We use semi-supervised learning to create a library of landmark detectors based on texture and shape. They can be applied to identify landmarks from new images and also be updated by incorporating new data. This is at the center of our vision of integrating atlas-guided annotation, landmark-based registration and atlas generation into an iterative framework.
+
+A big advantage of our approach is that, instead of requiring an experimentalist to label every region of interest for the learning system, our method automatically detects potential landmark and only needs the experimentalist to validate our library of landmark detectors. Once those have been validated, the process is completely automatic.
 
 % represent appearance landmark using binarized gradient orientation histograms and boundary landmark using curvature, and use MRF for registration.
 
@@ -99,27 +101,14 @@ The remaining of this paper is organized as the follows. Section 2 describes how
 
 \section{Related Work}
 
-
-Currently, histology atlas is most often constructed by aligning the histology series to an MRI template volume. This often require experimentalist to manually identify landmarks.
-
-The Allen Brain Atlas\cite{lein2007genome} and Waxholm Space \cite{lee2005standard} construct the histology atlas by aligning histology series to an MRI template volume \cite{yushkevich20063d}.
-
-
-based on a combination of high-frequency sectionto-section
-histology registration with low-frequency histology to (ex-cranio) MRI registration (Yushkevich, 
-
+%
+%Currently, histology atlas is most often constructed by aligning the histology series to an MRI template volume. This often require experimentalist to manually identify landmarks.
 
 An atlas is typically constructed by mapping image series of different studies to a common coordinate system, and aggregating the information. 
 Images of different modalities or specimens stained for different targets can be superimposed. For example, the Allen Mouse Brain Atlas\cite{lein2007genome} computes the expression energy of different genes by collecting statistics from in-situ hybridization images of all the studies. 
-In other cases, inter-specimen variation is interested. For example, the Waxholm Space atlas\cite{lee2005standard} provides an anatomical probability map that gives the probability of each voxel belonging to a particular anatomical structure. The probabilities are computed from a large number of co-registered specimens.
+In other cases, inter-specimen variation is interested. For example, the Waxholm Space atlas\cite{lee2005standard} provides an anatomical probability map that gives the probability of each voxel belonging to a particular anatomical structure. The probabilities are computed from a large number of co-registered specimens. The atlas that we aim to construct will combine images of different specimens and stained for different targets, and serve as the underpinning for circuits analysis and quantitative analysis of phenotypical variations.
 
-
-Currently most histology atlases are constructed by registering histology series to an MRI template volume. This often requires experimentalist to manually identify landmarks in each section, which is labor intensive. 
-In contrast, our method would require the experimentalist to validate our library of texture and shape detectors. Once those have been validated, the process is completely automatic.
-
-
-There has been much work on reconstructing 3D volume from histology sections. Intensity-based methods \cite{ourselin2001reconstructing, roberts2012toward} uses block-matching to compute a regularized displacement field. Other methods rely on detecting gradients in the image, and compute alignment by smoothing high-gradient edges \cite{cifor2011smoothness, bagci2010automatic, haber2006intensity}. The level of details in histology images also motivates the use of more elaborate descriptors, including SIFT \cite{sun2012nearly}, binarized gradient orientation histogram \cite{kurkure2011landmark} and bag of multiple types of features \cite{cruz2011visual}. 
-
+To alleviate the bottleneck of manually selecting landmarks for registration, there has been much work on automatically reconstructing 3D volume from histology sections. Intensity-based methods such as \cite{ourselin2001reconstructing, roberts2012toward} use block-matching to compute a regularized displacement field. In the Allen Brain Atlas\cite{lein2007genome, yushkevich20063d}, the Waxholm Space \cite{johnson2010waxholm} and many earlier work\cite{lee2005standard, ali2005automated}, histology section registration is based on maximizing mutual information.Other methods such as \cite{cifor2011smoothness, bagci2010automatic, haber2006intensity} rely on detecting gradients in the image, and try to align high-gradient edges. The level of details in histology images also motivates the use of more elaborate descriptors for describing landmarks, including SIFT \cite{sun2012nearly}, binarized gradient orientation histogram \cite{kurkure2011landmark} and bag of multiple types of features \cite{cruz2011visual}. In our work, we use Gabor filters combined with superpixelation to represent texture, and detect significant regions with distinct texture as well as stable boundary segments as landmarks.
 
 \section{Representing Texture using Histograms of Gabor Textons} 
 
