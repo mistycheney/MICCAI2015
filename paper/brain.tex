@@ -16,10 +16,10 @@
 
 \begin{document}
 
-\abovedisplayskip=2pt 
-\abovedisplayshortskip=1pt
-\belowdisplayskip=2pt 
-\belowdisplayshortskip=1pt
+%\abovedisplayskip=2pt
+%\abovedisplayshortskip=1pt
+%\belowdisplayskip=2pt 
+%\belowdisplayshortskip=1pt
 \textfloatsep=5pt
 \intextsep=3pt
 
@@ -47,7 +47,7 @@
 \begin{abstract}
 
 Brightfield and fluorescent imaging of whole brain sections are
-fundamental tools of research in the Kleinfeld and Goulding Labs.  As
+fundamental tools of research in mouse brain study.  As
 sectioning and imaging become more efficient, there is an increasing
 need to automate the post-processing of sections for alignment and
 three dimensional visualization. There is a further need to facilitate
@@ -124,7 +124,7 @@ We use semi-supervised learning to create a library of landmark detectors based 
 %%In particular, the directionality of a tract serves as an important feature of the landmark.
 %This motivates our algorithm to model texture, and detect landmarks including both compact regions and boundaries.
 
-The remaining of this paper is organized as the follows. Section 2 describes how we represent textures using Gabor filters and superpixels. Section 3 and 4 explains how we identify potential landmark regions based on texture distinctiveness. Section 5 describes how we detect stable boundary segments to complement region landmarks. Section 6 describes how landmarks are matched between sections.
+The remaining of this paper is organized as the follows. Section 3 describes how we represent textures using Gabor filters and superpixels. Section 4 and 5 explains how we identify potential landmark regions based on texture distinctiveness. Section 6 describes how we detect stable boundary segments to complement region landmarks. Section 7 describes how landmarks are matched between sections.
 
 %Our method is not a segmentation algorithm. As we are only interested in identifying and modelling a small proportion of the image that are of interest to the researcher.
 
@@ -135,11 +135,13 @@ The remaining of this paper is organized as the follows. Section 2 describes how
 %
 %Currently, histology atlas is most often constructed by aligning the histology series to an MRI template volume. This often require experimentalist to manually identify landmarks.
 
-An atlas is typically constructed by mapping image series of different studies to a common coordinate system, and aggregating the information. 
-Images of different modalities or specimens stained for different targets can be superimposed. For example, the Allen Mouse Brain Atlas\cite{lein2007genome} computes the expression energy of different genes by collecting statistics from in-situ hybridization images of all the studies. 
-In other cases, inter-specimen variation is interested. For example, the Waxholm Space atlas\cite{lee2005standard} provides an anatomical probability map that gives the probability of each voxel belonging to a particular anatomical structure. The probabilities are computed from a large number of co-registered specimens. The atlas that we aim to construct will combine images of different specimens and stained for different targets, and serve as the underpinning for circuits analysis and quantitative analysis of phenotypical variations.
+%An atlas is typically constructed by mapping image series of different studies to a common coordinate system, and aggregating the information. 
+%Images of different modalities or specimens stained for different targets can be superimposed. For example, the Allen Mouse Brain Atlas\cite{lein2007genome} computes the expression energy of different genes by collecting statistics from in-situ hybridization images of all the studies. 
+%In other cases, inter-specimen variation is interested. For example, the Waxholm Space atlas\cite{lee2005standard} provides an anatomical probability map that gives the probability of each voxel belonging to a particular anatomical structure. The probabilities are computed from a large number of co-registered specimens. The atlas that we aim to construct will combine images of different specimens and stained for different targets, and serve as the underpinning for circuits analysis and quantitative analysis of phenotypical variations.
 
-To alleviate the bottleneck of manually selecting landmarks for registration, there has been much work on automatically reconstructing 3D volume from histology sections. Intensity-based methods such as \cite{ourselin2001reconstructing, roberts2012toward} use block-matching to compute a regularized displacement field. In the Allen Brain Atlas\cite{lein2007genome, yushkevich20063d}, the Waxholm Space \cite{johnson2010waxholm} and many earlier work\cite{lee2005standard, ali2005automated}, histology section registration is based on maximizing mutual information.Other methods such as \cite{cifor2011smoothness, bagci2010automatic, haber2006intensity} rely on detecting gradients in the image, and try to align high-gradient edges. The level of details in histology images also motivates the use of more elaborate descriptors for describing landmarks, including SIFT \cite{sun2012nearly}, binarized gradient orientation histogram \cite{kurkure2011landmark} and bag of multiple types of features \cite{cruz2011visual}. In our work, we use Gabor filters combined with superpixelation to represent texture, and detect significant regions with distinct texture as well as stable boundary segments as landmarks.
+Existing work on automatically reconstructing 3D volume from histology section include the Allen Mouse Brain Atlas \cite{lein2007genome, yushkevich20063d} and the Waxholm Space \cite{johnson2010waxholm}, both of which use intensity-based methods such block-matching \cite{ourselin2001reconstructing, roberts2012toward} and mutual information maximization. Landmark-based methods take advantage of details in the histology image using descriptors such as SIFT\cite{sun2012nearly} and binarized gradient orientation histogram \cite{kurkure2011landmark}.
+
+%To alleviate the bottleneck of manually selecting landmarks for registration, there has been much work on automatically reconstructing 3D volume from histology sections. Intensity-based methods such as \cite{ourselin2001reconstructing, roberts2012toward} use block-matching to compute a regularized displacement field. In the Allen Brain Atlas\cite{lein2007genome, yushkevich20063d}, the Waxholm Space \cite{johnson2010waxholm} and many earlier work\cite{lee2005standard, ali2005automated}, histology section registration is based on maximizing mutual information.Other methods such as \cite{bagci2010automatic, haber2006intensity} rely on detecting gradients in the image, and try to align high-gradient edges. The level of details in histology images also motivates the use of more elaborate descriptors for describing landmarks, including SIFT \cite{sun2012nearly}, binarized gradient orientation histogram \cite{kurkure2011landmark} and bag of multiple types of features \cite{cruz2011visual}. In our work, we use Gabor filters combined with superpixelation to represent texture, and detect significant regions with distinct texture as well as stable boundary segments as landmarks.
 
 \section{Representing Texture using Histograms of Gabor Textons} 
 
@@ -151,7 +153,7 @@ To alleviate the bottleneck of manually selecting landmarks for registration, th
 %
 %Textons are proposed in \cite{leung2001representing}
 
-Images are first filtered using Gabor filters\cite{jain1990unsupervised, clausi2000designing} with 9 orientations and 11 scales, resulting in 99 dimensional feature vectors. We reduce the data by quantizing these feature vectors into 100 clusters using K-Means. Clusters with close centroids are then merged, and the final cluster centroids are the textons. In our experiment, we have 14 textons.
+Images are first filtered using Gabor filters\cite{jain1990unsupervised} with 9 orientations and 11 scales, resulting in 99 dimensional feature vectors. We reduce the data by quantizing these feature vectors into 100 clusters using K-Means. Clusters with close centroids are then merged, and the final cluster centroids are the textons. In our experiment, we have 14 textons.
 
 %\begin{figure}
 %\caption{Gabor Filters}
@@ -167,7 +169,8 @@ we need the features to be rotation-invariant. For this purpose, before doing K-
 
 %	\includegraphics[width=.5\textwidth]{../figures/TextonHistComparisonWithArrows.png}
 \begin{figure}
-	\includegraphics[width=\textwidth]{../figures/OrigImgTexMapWithInset.png}
+\centering
+	\includegraphics[width=.8\textwidth]{../figures/OrigImgTexMapWithInset.png}
 	\caption{Left: A typical image of mouse brainstem section. Right top: part of the original image with superpixels overlaid. Middle: texton map of the same area. Bottom: texton histograms of three superpixels with different textures.}
 	\label{fig:TextonHistComparison}
 \end{figure}
@@ -195,7 +198,8 @@ The overall significance score $F(S) = w_1 \cdot F^{cont}(S) + w_2 \cdot F^{coh}
 
 To find potential regions, we perform region growing for every superpixel. Starting with a singleton containing the seed superpixel, this greedy procedure considers all neighbours of the current set, and iteratively adds the one whose texture is closest to the current region's texture, measured by the $\chi^2$ distance between texton histograms. The growing stops when the region reaches 10\% of the total area. Eventually, the region at the point when the significance score is the largest is returned. Figure \ref{fig:RegionGrowing} shows examples of this procedure.
 \begin{figure}
-	\includegraphics[width=\textwidth]{../figures/RegionGrowingPicsOnly.png}
+\centering
+	\includegraphics[width=.8\textwidth]{../figures/RegionGrowingPicsOnly.png}
 	\caption{Regions during growing, from left to right, at iteration 1, 10, 50, 96 (most significant), 150 (last iteration).} %Below it are plots of the significance score and the three terms.}
 	\label{fig:RegionGrowing}
 \end{figure}
@@ -207,8 +211,9 @@ We call the set of superpixels that grows from a seed superpixel $k$ the \textit
 %Figure \ref{fig:TopRegions} shows the top 20 region proposals detected in two consecutive sections. Many nuclei are detected.
 
 \begin{figure}
-	\includegraphics[width=\textwidth]{../figures/ProposalsGoodAndBad.png}
-	\caption{The first row shows the region proposals of four different seeds (in red) in the facial motor nucleus. They are very similar. The second row shows the proposals of four neighboring seeds in an inhomogeneous region. They are very different.} %Below it are plots of the significance score and the three terms.}
+\centering
+	\includegraphics[width=.8\textwidth]{../figures/ProposalsGoodAndBad.png}
+	\caption{Top row: the region proposals of four different seeds (in red) in the facial motor nucleus. They are very similar. Bottom row: the proposals of four neighboring seeds in an inhomogeneous region. They are very random.} %Below it are plots of the significance score and the three terms.}
 	\label{fig:ConsistentProposals}
 \end{figure}
 
@@ -223,7 +228,8 @@ We call the set of superpixels that grows from a seed superpixel $k$ the \textit
 Sometimes a region gradually transitions into neighboring texture on one side, but has a clear boundary on the other side. The method described in the previous section may not capture this inhomogeneous region, but the open boundary is nonetheless a perfect landmark. Figure \ref{fig:RobustBoundaryExample} shows such an example. Notice how much the proposals from seeds in such region vary, but many of them still agree on the clear boundary. This motivates a consensus-based approach for evaluating boundary robustness, in which each region proposal votes for the segments on its boundary.
 %Since region growing is sensitive to the seed, 
 \begin{figure}
-	\includegraphics[width=\textwidth]{../figures/RobustBoundaryExampleHighlightLine.png}
+	\centering
+	\includegraphics[width=.8\textwidth]{../figures/RobustBoundaryExampleHighlightLine.png}
 	\caption{The three region proposals in an inhomogeneous area are not consistent as a whole, but they all agree on a robust boundary segment (highlighted).}
 	\label{fig:RobustBoundaryExample}
 \end{figure}
@@ -307,7 +313,7 @@ The landmark matching algorithm is applied to all 30 pairs of consecutive images
 
 \begin{figure}
 	\includegraphics[width=\textwidth]{../figures/MatchingHorizontal.png}
-	\caption{Landmark matching example. Matched landmarks are marked with the same color and number. Note that matchings are found based only on texture and shape. Matching 13 is made possible by modelling both open boundaries and close boundaries. Landmarks such as 1 and 9 show considerable shape change, but are still matched.}
+	\caption{Landmark matching example. Matched landmarks are marked with the same color and number. Note that matchings are found based only on texture and shape. Matching 13 is made possible by modelling both open boundaries and close boundaries. Landmarks such as 12 and 9 show considerable shape change, but are still matched.}
 	\label{fig:LandmarkMatch}
 \end{figure}
 
